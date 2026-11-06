@@ -1,0 +1,260 @@
+@import "tailwindcss";
+@import "@fontsource-variable/unbounded/wght.css";
+@import "@fontsource-variable/instrument-sans/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";
+@import "@fontsource/silkscreen/400.css";
+
+/* Phones held sideways: the machine and console sit side by side. */
+@custom-variant short (@media (max-height: 520px) and (orientation: landscape));
+
+@theme {
+  --color-ink: #070a1f;
+  --color-navy: #0f1433;
+  --color-navy-2: #171d45;
+  --color-cream: #f4ecdc;
+  --color-sky: #8ecbff;
+  --color-violet: #c7b5ff;
+  --color-pink: #ff7b9c;
+  --color-gold: #ffd166;
+  --color-mint: #6df0b0;
+  --font-display: "Unbounded Variable", sans-serif;
+  --font-sans: "Instrument Sans Variable", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-pixel: "Silkscreen", ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: dark;
+  --muted: rgba(244, 236, 220, 0.68);
+  --line: rgba(199, 181, 255, 0.16);
+  --panel: rgba(18, 23, 62, 0.62);
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-sky);
+  outline-offset: 2px;
+}
+
+@media (pointer: fine) {
+  html,
+  body {
+    cursor: url("/cursors/arrow.png") 1 1, auto;
+  }
+  a,
+  button:not(:disabled),
+  summary,
+  [role="slider"],
+  body[data-cursor="grab"],
+  body[data-cursor="grab"] canvas {
+    cursor: url("/cursors/claw.png") 16 2, pointer !important;
+  }
+}
+
+.pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.04em;
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.arcade-room {
+  background:
+    radial-gradient(60vmax 44vmax at 50% 34%, rgba(107, 84, 230, 0.32), transparent 70%),
+    radial-gradient(44vmax 30vmax at 12% 92%, rgba(66, 140, 220, 0.2), transparent 70%),
+    radial-gradient(44vmax 30vmax at 90% 86%, rgba(255, 123, 156, 0.1), transparent 70%),
+    linear-gradient(180deg, #0a0e2a 0%, #070a1f 58%, #05071a 100%);
+}
+
+/* Floor grid that falls away behind the machine. */
+.arcade-floor {
+  position: absolute;
+  inset: auto -30% 0;
+  height: 34%;
+  background-image:
+    linear-gradient(rgba(142, 203, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(142, 203, 255, 0.14) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(0deg, #000 8%, transparent 86%);
+}
+
+.prize-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-cream);
+  background: rgba(7, 10, 31, 0.86);
+  border: 1px solid var(--tag);
+  box-shadow: 0 0 18px -4px var(--tag);
+}
+
+.prize-tag span {
+  font-family: var(--font-pixel);
+  color: var(--tag);
+}
+
+@keyframes float-chip {
+  0%, 100% { transform: translate3d(0, -5px, 0) rotate(-2deg); }
+  50% { transform: translate3d(0, 6px, 0) rotate(2deg); }
+}
+
+.float-chip {
+  animation: float-chip var(--float-time, 7s) ease-in-out infinite;
+}
+
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.led {
+  animation: led-pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes marquee-x {
+  to { transform: translateX(-50%); }
+}
+
+.skill-rail {
+  animation: marquee-x 34s linear infinite;
+}
+
+@keyframes boot-scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(420%); }
+}
+
+.boot-scan {
+  animation: boot-scan 1.5s linear infinite;
+}
+
+/* Section identity. Colours arrive as --accent, --accent-soft and --backdrop. */
+.section-surface {
+  background-color: var(--backdrop);
+  background-attachment: local;
+}
+
+.bg-who {
+  background-image:
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--accent-soft) 50%, transparent), transparent 42%),
+    radial-gradient(color-mix(in srgb, var(--accent) 15%, transparent) 1.2px, transparent 1.4px);
+  background-size: auto, 22px 22px;
+}
+
+.bg-work {
+  background-image:
+    radial-gradient(circle at 82% 6%, color-mix(in srgb, var(--accent-soft) 55%, transparent), transparent 40%),
+    linear-gradient(color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent) 1px, transparent 1px);
+  background-size: auto, 40px 40px, 40px 40px;
+}
+
+.bg-journey {
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 22%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 68% 12%, #ffe9f0, transparent),
+    radial-gradient(1.6px 1.6px at 38% 62%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 84% 48%, #ffd9e4, transparent),
+    radial-gradient(1.2px 1.2px at 22% 84%, #fff, transparent),
+    radial-gradient(circle at 50% 110%, color-mix(in srgb, var(--accent-soft) 62%, transparent), transparent 55%);
+  background-size: 420px 420px, 420px 420px, 420px 420px, 420px 420px, 420px 420px, auto;
+}
+
+.bg-certificates {
+  background-image:
+    radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--accent-soft) 46%, transparent), transparent 52%),
+    repeating-linear-gradient(90deg, rgba(246, 231, 200, 0.03) 0 1px, transparent 1px 7px);
+}
+
+.bg-contribution {
+  background-image:
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--accent-soft) 44%, transparent), transparent 42%),
+    linear-gradient(color-mix(in srgb, var(--accent) 6%, transparent) 2px, transparent 2px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 6%, transparent) 2px, transparent 2px);
+  background-size: auto, 16px 16px, 16px 16px;
+}
+
+.bg-contact {
+  background-image:
+    repeating-conic-gradient(from 0deg at 50% 16%, color-mix(in srgb, var(--accent) 7%, transparent) 0 7deg, transparent 7deg 18deg),
+    radial-gradient(circle at 50% 16%, color-mix(in srgb, var(--accent-soft) 54%, transparent), transparent 52%);
+}
+
+/* Holographic trading card sheen. */
+.holo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.32;
+  background: linear-gradient(
+    115deg,
+    transparent 22%,
+    rgba(142, 203, 255, 0.5) 38%,
+    rgba(199, 181, 255, 0.55) 50%,
+    rgba(255, 209, 102, 0.42) 62%,
+    transparent 78%
+  );
+  background-size: 220% 220%;
+  background-position: var(--sheen, 50%) 50%;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.section-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent) 45%, transparent) transparent;
+}
+
+dialog::backdrop {
+  background: rgba(4, 5, 16, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-chip,
+  .led,
+  .skill-rail,
+  .boot-scan {
+    animation: none;
+  }
+}
