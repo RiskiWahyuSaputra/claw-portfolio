@@ -2,7 +2,7 @@
 
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { COLLECTIBLES, byId, bySlug } from "@/data/collectibles";
+import { ALL_PRIZES, byId, bySlug } from "@/data/collectibles";
 import { supportsWebGL } from "@/game/capabilities";
 import { closeSection, dropClaw, openSection, quickSelect, setMode, setMove, startEngine } from "@/game/engine";
 import { game, loadHiScore, useGame } from "@/game/store";
@@ -54,9 +54,9 @@ function useKeyboard() {
         if (target.closest("button, a, summary")) return;
         event.preventDefault();
         if (!event.repeat) dropClaw();
-      } else if (/^[1-6]$/.test(event.key) && !event.repeat) {
+      } else if (/^[1-7]$/.test(event.key) && !event.repeat) {
         if (game().mode !== "quick") setMode("quick");
-        quickSelect(COLLECTIBLES[Number(event.key) - 1].id);
+        quickSelect(ALL_PRIZES[Number(event.key) - 1].id);
       }
     };
     const up = (event: KeyboardEvent) => {

@@ -1,5 +1,5 @@
 import { CLAW } from "./layout";
-import type { CollectibleId } from "@/data/collectibles";
+import type { PrizeId } from "@/data/collectibles";
 
 /**
  * Mutable per-frame state. GSAP writes it, renderers read it inside their own loop,
@@ -21,10 +21,12 @@ export const pose = {
   focus: 0,
   /** Sideways swing of the claw hub, written by the renderer. */
   swing: 0,
+  /** Fall of the secret prize into the pit, 0 = out of sight, 1 = landed. */
+  secretDrop: 0,
   /** Scale of the machine contents while refilling, 0 to 1. */
   refill: 1,
   prize: {
-    id: null as CollectibleId | null,
+    id: null as PrizeId | null,
     x: 0,
     y: 0,
     z: 0,

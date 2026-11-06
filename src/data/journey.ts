@@ -8,44 +8,69 @@ export type JourneyEntry = {
   kind: JourneyKind;
   type: string;
   location: string;
-  body: string;
+  points: string[];
   tags: string[];
   current?: boolean;
 };
 
-/** Mirrors the previous portfolio's timeline, newest first. */
+/** Follows the CV, newest first. */
 export const JOURNEY: JourneyEntry[] = [
   {
     period: "Aug 2026 - Present",
-    title: "Information Technology Developer",
+    title: "IT Developer",
     org: "BEST Corporation Syariah",
     orgNote: "PT Bandung Eco Sinergi Teknologi",
     kind: "work",
     type: "Full-time",
-    location: "Bandung, West Java · On-site",
-    body: "Building internal web applications and maintaining systems based on incoming helpdesk tickets, keeping every digital service and operational workflow running optimally and reliably.",
-    tags: ["IT Development", "Front-End Design", "Laravel", "React"],
+    location: "Bandung, West Java, Indonesia",
+    points: [
+      "Build and develop internal company web applications using Laravel, PHP, React, Next.js, and MySQL.",
+      "Handle system maintenance, bug fixes, and operational service requests that come in through IT helpdesk tickets.",
+      "Integrate WhatsApp notification automation, digital signatures (E-Sign), barcode/QR generation, and automated PDF/Excel reports.",
+      "Apply root cause analysis, safe database migrations, and clean Git workflows to keep production systems stable.",
+    ],
+    tags: ["Laravel", "PHP", "React", "Next.js", "MySQL"],
     current: true,
   },
   {
     period: "Feb 2026 - Jul 2026",
-    title: "Information Technology Developer",
+    title: "IT Developer (Apprentice)",
     org: "BEST Corporation Syariah",
     orgNote: "PT Bandung Eco Sinergi Teknologi",
     kind: "work",
     type: "Apprenticeship",
-    location: "Bandung, West Java · On-site",
-    body: "Joined the IT team as an apprentice, contributing to internal web application development and day-to-day system maintenance before moving into a full-time role.",
-    tags: ["Web Development", "JavaScript", "PHP", "MySQL"],
+    location: "Bandung, West Java, Indonesia",
+    points: [
+      "Contributed to internal web application development and day-to-day system maintenance before being hired full-time.",
+      "Built RESTful API integrations between frontend and backend systems.",
+      "Implemented responsive interfaces using React.js and Tailwind CSS.",
+    ],
+    tags: ["REST API", "React.js", "Tailwind CSS"],
   },
   {
-    period: "Education",
-    title: "Department of Information Technology",
+    period: "Sep 2023 - Sep 2026",
+    title: "D3 Informatics Management",
     org: "Politeknik Negeri Lampung",
+    orgNote: "Department of Information Technology",
     kind: "education",
     type: "Diploma",
-    location: "Bandar Lampung, Lampung",
-    body: "Studied software and web development fundamentals, including building a QRIS-based practicum payment application for the department.",
+    location: "Bandar Lampung, Lampung, Indonesia",
+    points: [
+      "Studied software and web development fundamentals, including building a QRIS-based practicum payment application for the department.",
+    ],
     tags: ["Software Engineering", "Web Programming", "Database"],
+  },
+  {
+    period: "Feb 2022 - Jan 2022",
+    title: "Junior Web Developer",
+    org: "Telenergie Indonesia",
+    kind: "work",
+    type: "Internship (PKL)",
+    location: "Bandar Lampung, Lampung, Indonesia",
+    points: [
+      "Designed and developed web applications using native PHP and MySQL.",
+      "Built and maintained frontend interfaces with Bootstrap.",
+    ],
+    tags: ["PHP Native", "MySQL", "Bootstrap"],
   },
 ];

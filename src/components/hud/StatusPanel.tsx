@@ -4,7 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { COLLECTIBLES } from "@/data/collectibles";
 import { insertCoin } from "@/game/engine";
-import { useGame } from "@/game/store";
+import { availabilityLine, useGame } from "@/game/store";
 
 function CoinButton({ compact }: { compact?: boolean }) {
   const credits = useGame((s) => s.credits);
@@ -69,7 +69,7 @@ export function StatusPanel() {
   const phase = useGame((s) => s.phase);
   const collected = useGame((s) => s.collected);
   const hiScore = useGame((s) => s.hiScore);
-  const left = COLLECTIBLES.length - collected.length;
+  const availability = useGame(availabilityLine);
 
   return (
     <aside className="glass w-[17.5rem] space-y-4 rounded-2xl p-4" aria-label="Machine status">
@@ -80,7 +80,7 @@ export function StatusPanel() {
           <span className="pixel truncate text-sm text-cream">{message}</span>
         </p>
         <p className="pixel text-xs text-sky">
-          {left} COLLECTIBLE{left === 1 ? "" : "S"} AVAILABLE
+          {availability}
         </p>
       </div>
       <div className="space-y-2 border-t border-white/10 pt-3.5">
@@ -109,7 +109,7 @@ export function StatusStrip() {
   const collected = useGame((s) => s.collected);
   const hiScore = useGame((s) => s.hiScore);
   const phase = useGame((s) => s.phase);
-  const left = COLLECTIBLES.length - collected.length;
+  const availability = useGame(availabilityLine);
 
   return (
     <div className="relative z-10 flex shrink-0 items-center gap-2 px-3 pb-1 sm:px-5">
@@ -119,7 +119,7 @@ export function StatusStrip() {
           <span className={`led size-1.5 shrink-0 rounded-full ${phase === "idle" ? "bg-mint" : "bg-gold"}`} />
           <span className="pixel truncate text-[11px] text-cream">{message}</span>
         </p>
-        <p className="pixel truncate text-[10px] text-sky">{left} COLLECTIBLE{left === 1 ? "" : "S"} AVAILABLE</p>
+        <p className="pixel truncate text-[10px] text-sky">{availability}</p>
       </div>
       <div className="w-20 shrink-0 space-y-1">
         <ProgressCells />

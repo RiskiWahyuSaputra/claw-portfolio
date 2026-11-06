@@ -1,7 +1,10 @@
 export type CollectibleId = "who" | "work" | "journey" | "certificates" | "contribution" | "contact";
 
+/** The hidden seventh prize. It only exists in the machine after the first six are collected. */
+export type PrizeId = CollectibleId | "secret";
+
 export type Collectible = {
-  id: CollectibleId;
+  id: PrizeId;
   index: number;
   number: string;
   /** URL hash, so every section can be linked to directly. */
@@ -9,14 +12,14 @@ export type Collectible = {
   title: string;
   object: string;
   tagline: string;
-  rarity: "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+  rarity: "COMMON" | "RARE" | "EPIC" | "LEGENDARY" | "SECRET";
   /** Section identity. Consumed as CSS variables by the section shell. */
   accent: string;
   accentSoft: string;
   backdrop: string;
 };
 
-export const COLLECTIBLES: Collectible[] = [
+export const COLLECTIBLES: (Collectible & { id: CollectibleId })[] = [
   {
     id: "who",
     index: 0,
@@ -50,7 +53,7 @@ export const COLLECTIBLES: Collectible[] = [
     slug: "career-journey",
     title: "Career Journey",
     object: "Mini Rocket",
-    tagline: "From Politeknik Negeri Lampung to a full-time IT developer role.",
+    tagline: "From a first internship to a full-time IT developer role.",
     rarity: "RARE",
     accent: "#ff9fb8",
     accentSoft: "#b4476e",
@@ -97,5 +100,21 @@ export const COLLECTIBLES: Collectible[] = [
   },
 ];
 
-export const byId = (id: CollectibleId) => COLLECTIBLES.find((c) => c.id === id)!;
+export const SECRET_PRIZE: Collectible = {
+  id: "secret",
+  index: 6,
+  number: "07",
+  slug: "machine-cleared",
+  title: "Machine Cleared",
+  object: "Holo Token",
+  tagline: "The seventh prize, only for visitors who cleared the whole machine.",
+  rarity: "SECRET",
+  accent: "#9ff0ff",
+  accentSoft: "#6a4fd8",
+  backdrop: "#0d0b26",
+};
+
+export const ALL_PRIZES: Collectible[] = [...COLLECTIBLES, SECRET_PRIZE];
+
+export const byId = (id: PrizeId) => ALL_PRIZES.find((c) => c.id === id)!;
 export const bySlug = (slug: string) => COLLECTIBLES.find((c) => c.slug === slug);

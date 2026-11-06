@@ -4,11 +4,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { RoundedBox } from "@react-three/drei";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import { COLLECTIBLES } from "@/data/collectibles";
 import { dropClaw, insertCoin, setMove } from "@/game/engine";
 import { CHAMBER, CHUTE, DOOR } from "@/game/layout";
 import { pose } from "@/game/pose";
-import { isBusy, useGame } from "@/game/store";
+import { availabilityLine, isBusy, useGame } from "@/game/store";
 import { Glow } from "./Glow";
 import {
   backWallTexture,
@@ -111,11 +110,9 @@ function StatusPanel() {
 
   useEffect(() => {
     const render = () => {
-      const { message, collected, credits } = useGame.getState();
-      const left = COLLECTIBLES.length - collected.length;
-      const secondary = left === 0
-        ? `${collected.length}/${COLLECTIBLES.length} COLLECTED`
-        : `${left} COLLECTIBLE${left > 1 ? "S" : ""} AVAILABLE`;
+      const state = useGame.getState();
+      const { message, credits } = state;
+      const secondary = availabilityLine(state);
       panel.draw(message, credits ? `${secondary} / CREDIT ${credits}` : secondary, "#ffd166");
     };
     render();

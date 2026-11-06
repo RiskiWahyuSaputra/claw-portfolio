@@ -20,12 +20,18 @@ npm start
 
 | Aksi | Desktop | Mobile |
 | --- | --- | --- |
-| Quick Select | Klik prize di mesin, daftar konsol, atau tombol `1`-`6` | Tap prize atau daftar konsol |
+| Quick Select | Klik prize di mesin, daftar konsol, atau tombol `1`-`7` | Tap prize atau daftar konsol |
 | Gerak capit | `←` `→`, tombol LEFT/RIGHT, joystick | LEFT/RIGHT, joystick |
 | Turunkan capit | `Space` atau DROP | DROP |
 | Tutup section | `Esc`, BACK TO MACHINE, tombol back browser | BACK TO MACHINE |
 
 Joystick, LEFT/RIGHT, DROP, dan slot koin pada mesin 3D juga bisa diklik langsung.
+
+## Hadiah rahasia
+
+Setelah 6 collectible terkumpul lewat capit, Holo Token ke-7 jatuh ke dalam mesin saat pengunjung kembali.
+Token ini membuka kartu "Machine Cleared" yang bisa diberi nama, diunduh sebagai PNG, dan dibagikan.
+Membuka section lewat menu tidak dihitung sebagai collected.
 
 ## Struktur
 
@@ -52,7 +58,7 @@ sehingga animasi capit tidak memicu render ulang React.
 
 - Profil, kontak, filosofi: `src/data/profile.ts`
 - Project: `src/data/projects.ts` (gambar di `public/projects`)
-- Timeline: `src/data/journey.ts`
+- Timeline (mengikuti CV): `src/data/journey.ts`
 - Sertifikat: `src/data/certificates.ts`
 - Skill: `src/data/skills.ts`
 - Nama, warna, dan urutan section: `src/data/collectibles.ts`

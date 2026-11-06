@@ -1,10 +1,10 @@
 import gsap from "gsap";
-import { COLLECTIBLES, byId, type CollectibleId } from "@/data/collectibles";
+import { COLLECTIBLES, SECRET_PRIZE, byId, type PrizeId } from "@/data/collectibles";
 import { audio } from "./audio";
 import { prefersReducedMotion } from "./capabilities";
 import { CHUTE, CLAW, DOOR, FOCUS, SLOTS } from "./layout";
 import { pose } from "./pose";
-import { game, READY_MESSAGE, saveHiScore, type Phase } from "./store";
+import { game, READY_MESSAGE, saveHiScore, secretAvailable, type Phase } from "./store";
 
 /** Celebration hook, wired to the particle canvas. */
 export const fx: { burst: (color: string) => void } = { burst: () => {} };
@@ -16,18 +16,26 @@ let tickerStarted = false;
 const setPhase = (phase: Phase, message?: string) =>
   game().set(message ? { phase, message } : { phase });
 
-const available = () => COLLECTIBLES.filter((c) => !game().collected.includes(c.id));
+const SECRET_MESSAGE = "SECRET PRIZE UNLOCKED";
 
-function availabilityMessage() {
-  const left = available().length;
-  if (left === 0) return "MACHINE CLEARED";
-  return READY_MESSAGE;
+/** Every prize currently inside the machine. */
+function available(): PrizeId[] {
+  const state = game();
+  const ids: PrizeId[] = COLLECTIBLES.filter((c) => !state.collected.includes(c.id)).map((c) => c.id);
+  return secretAvailable(state) ? [...ids, SECRET_PRIZE.id] : ids;
 }
 
-function aimedPrize(): CollectibleId | null {
-  let best: CollectibleId | null = null;
+export const canGrab = (id: PrizeId) => available().includes(id);
+
+function availabilityMessage() {
+  if (secretAvailable(game())) return SECRET_MESSAGE;
+  return available().length === 0 ? "MACHINE CLEARED" : READY_MESSAGE;
+}
+
+function aimedPrize(): PrizeId | null {
+  let best: PrizeId | null = null;
   let bestDistance: number = CLAW.tolerance;
-  for (const { id } of available()) {
+  for (const id of available()) {
     const distance = Math.abs(SLOTS[id].x - pose.x);
     if (distance <= bestDistance) {
       best = id;
@@ -87,7 +95,7 @@ function pressDropButton(tl: gsap.core.Timeline) {
 }
 
 /** Steps 3 to 8 of the grab: descend, grip, lift, carry, release, reveal. */
-function grabSequence(tl: gsap.core.Timeline, id: CollectibleId) {
+function grabSequence(tl: gsap.core.Timeline, id: PrizeId) {
   const slot = SLOTS[id];
   const gripY = slot.y + CLAW.gripOffset;
   const prize = pose.prize;
@@ -150,8 +158,12 @@ function grabSequence(tl: gsap.core.Timeline, id: CollectibleId) {
   tl.call(() => openSection(id, true));
 }
 
-function collect(id: CollectibleId) {
+function collect(id: PrizeId) {
   const { collected, hiScore, set } = game();
+  if (id === "secret") {
+    set({ secretClaimed: true });
+    return;
+  }
   if (collected.includes(id)) return;
   const next = [...collected, id];
   const best = Math.max(hiScore, next.length);
@@ -160,9 +172,8 @@ function collect(id: CollectibleId) {
 }
 
 /** MODE 1: pick a prize and the claw does the rest. */
-export function quickSelect(id: CollectibleId) {
-  const { phase, collected } = game();
-  if (phase !== "idle" || collected.includes(id)) return false;
+export function quickSelect(id: PrizeId) {
+  if (game().phase !== "idle" || !canGrab(id)) return false;
 
   // The lock is taken synchronously: a timeline callback would leave a one-frame gap.
   setPhase("moving", `TARGET: ${byId(id).title.toUpperCase()}`);
@@ -217,7 +228,7 @@ export function dropClaw() {
 }
 
 /** Opens a section. Without a claw win this is the dock's direct navigation. */
-export function openSection(id: CollectibleId, fromClaw = false) {
+export function openSection(id: PrizeId, fromClaw = false) {
   const { phase, set } = game();
   if (!fromClaw && phase !== "idle" && phase !== "section") return;
   if (!fromClaw) audio.click();
@@ -238,8 +249,22 @@ export function closeSection() {
   tl.to(pose, { x: pose.x, open: 0.55, duration: 0.4 }, "<");
   tl.call(() => {
     pose.prize.id = null;
-    setPhase("idle", availabilityMessage());
   });
+
+  const { collected, secretUnlocked } = game();
+  if (collected.length === COLLECTIBLES.length && !secretUnlocked) unlockSecret(tl);
+  tl.call(() => setPhase("idle", availabilityMessage()));
+}
+
+/** The machine celebrates, then the seventh prize falls into the pit. */
+function unlockSecret(tl: gsap.core.Timeline) {
+  tl.call(() => {
+    game().set({ secretUnlocked: true, message: SECRET_MESSAGE });
+    audio.win();
+    fx.burst(SECRET_PRIZE.accent);
+  }, undefined, ">0.2");
+  tl.fromTo(pose, { secretDrop: 0 }, { secretDrop: 1, duration: 1.2, ease: "bounce.out" });
+  tl.call(() => audio.thud(), undefined, "<0.42");
 }
 
 /** Restocks the machine after a full run. */
@@ -248,7 +273,8 @@ export function refill() {
   if (phase !== "idle") return;
   audio.coin();
   setPhase("returning", "RESTOCKING");
-  set({ collected: [] });
+  set({ collected: [], secretUnlocked: false, secretClaimed: false });
+  pose.secretDrop = 0;
   const tl = newTimeline();
   tl.fromTo(pose, { refill: 0 }, { refill: 1, duration: 0.8, ease: "back.out(1.8)" });
   tl.call(() => setPhase("idle", READY_MESSAGE));

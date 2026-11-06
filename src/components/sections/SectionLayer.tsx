@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { LuArrowLeft, LuArrowRight, LuCheck } from "react-icons/lu";
-import { COLLECTIBLES, byId, type CollectibleId } from "@/data/collectibles";
+import { LuArrowLeft, LuArrowRight, LuCheck, LuSparkles } from "react-icons/lu";
+import { COLLECTIBLES, byId, type PrizeId } from "@/data/collectibles";
 import { closeSection, openSection } from "@/game/engine";
 import { useGame } from "@/game/store";
 import { CollectibleIcon } from "@/components/ui/CollectibleIcon";
@@ -11,24 +11,29 @@ import { Certificates } from "./Certificates";
 import { Contact } from "./Contact";
 import { Contribution } from "./Contribution";
 import { Journey } from "./Journey";
+import { MachineCleared } from "./MachineCleared";
 import { WhoAmI } from "./WhoAmI";
 import { Work } from "./Work";
 
-const CONTENT: Record<CollectibleId, React.ComponentType> = {
+const CONTENT: Record<PrizeId, React.ComponentType> = {
   who: WhoAmI,
   work: Work,
   journey: Journey,
   certificates: Certificates,
   contribution: Contribution,
   contact: Contact,
+  secret: MachineCleared,
 };
 
-function Showcase({ id }: { id: CollectibleId }) {
+function Showcase({ id }: { id: PrizeId }) {
   const item = byId(id);
   const Content = CONTENT[id];
-  const collected = useGame((s) => s.collected.includes(id));
+  const isSecret = id === "secret";
+  const collected = useGame((s) => (id === "secret" ? s.secretClaimed : s.collected.includes(id)));
+  // Unlocking happens back at the machine, so tell the visitor to go and look.
+  const secretWaiting = useGame((s) => s.collected.length === COLLECTIBLES.length && !s.secretUnlocked);
   const scroller = useRef<HTMLDivElement>(null);
-  const next = COLLECTIBLES[(item.index + 1) % COLLECTIBLES.length];
+  const next = isSecret ? byId("contact") : COLLECTIBLES[(item.index + 1) % COLLECTIBLES.length];
 
   useEffect(() => {
     scroller.current?.focus({ preventScroll: true });
@@ -50,6 +55,22 @@ function Showcase({ id }: { id: CollectibleId }) {
           BACK TO MACHINE
         </button>
 
+        {secretWaiting && (
+          <motion.button
+            type="button"
+            onClick={closeSection}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mb-6 flex w-full items-center gap-3 rounded-xl border border-[#9ff0ff]/60 bg-[#9ff0ff]/10 p-3 text-left text-sm text-cream shadow-[0_0_26px_-10px_#9ff0ff]"
+          >
+            <LuSparkles className="size-5 shrink-0 text-[#9ff0ff]" aria-hidden="true" />
+            <span>
+              <strong className="font-semibold">All 6 collected.</strong> Something just unlocked. Head back to the machine.
+            </span>
+          </motion.button>
+        )}
+
         <header className="mb-9 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           <motion.div
             initial={{ scale: 0.4, rotate: -14, opacity: 0 }}
@@ -62,8 +83,8 @@ function Showcase({ id }: { id: CollectibleId }) {
           </motion.div>
           <div className="min-w-0">
             <p className="pixel mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--accent)]">
-              <span>COLLECTIBLE {item.number} / 06</span>
-              <span className="text-cream/60">{item.rarity}</span>
+              <span>{isSecret ? "SECRET COLLECTIBLE" : `COLLECTIBLE ${item.number} / 06`}</span>
+              {!isSecret && <span className="text-cream/60">{item.rarity}</span>}
               {collected && (
                 <span className="inline-flex items-center gap-1 text-mint">
                   <LuCheck className="size-3.5" /> COLLECTED

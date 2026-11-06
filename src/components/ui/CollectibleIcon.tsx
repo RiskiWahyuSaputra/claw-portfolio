@@ -1,6 +1,6 @@
-import type { CollectibleId } from "@/data/collectibles";
+import type { PrizeId } from "@/data/collectibles";
 
-const shapes: Record<CollectibleId, React.ReactNode> = {
+const shapes: Record<PrizeId, React.ReactNode> = {
   who: (
     <>
       <rect x="20" y="33" width="24" height="23" rx="11" fill="#6f58c9" />
@@ -59,11 +59,19 @@ const shapes: Record<CollectibleId, React.ReactNode> = {
       <path d="m32 15 2.2 5 5.3.5-4 3.5 1.2 5.3-4.7-2.8-4.7 2.8 1.2-5.3-4-3.5 5.3-.5Z" fill="#fff8e3" />
     </>
   ),
+  secret: (
+    <>
+      <circle cx="32" cy="32" r="29" fill="#9ff0ff" opacity=".14" />
+      <circle cx="32" cy="32" r="23" fill="#4a3ad0" stroke="#9ff0ff" strokeWidth="3.5" />
+      <circle cx="32" cy="32" r="17" fill="#7f6bff" opacity=".55" />
+      <path d="m32 16 4.7 10.3 11.3 1.2-8.4 7.5 2.4 11.1-10-5.7-10 5.7 2.4-11.1-8.4-7.5 11.3-1.2Z" fill="#e9fcff" />
+    </>
+  ),
 };
 
-export function CollectibleIcon({ id, className }: { id: CollectibleId; className?: string }) {
+export function CollectibleIcon({ id, className, ...rest }: { id: PrizeId; className?: string; "data-prize"?: string }) {
   return (
-    <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
+    <svg viewBox="0 0 64 64" className={className} aria-hidden="true" {...rest}>
       {shapes[id]}
     </svg>
   );

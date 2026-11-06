@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CollectibleId } from "@/data/collectibles";
+import { COLLECTIBLES, type CollectibleId, type PrizeId } from "@/data/collectibles";
 
 export type Phase =
   | "idle"
@@ -22,14 +22,19 @@ type GameState = {
   sceneFailed: boolean;
   booted: boolean;
   collected: CollectibleId[];
+  /** The secret prize has dropped into the machine. */
+  secretUnlocked: boolean;
+  secretClaimed: boolean;
+  /** Name typed on the Machine Cleared card, kept when the card is reopened. */
+  playerName: string;
   hiScore: number;
   credits: number;
-  activeSection: CollectibleId | null;
+  activeSection: PrizeId | null;
   /** Prize being shown in the reveal overlay. */
-  revealId: CollectibleId | null;
-  hovered: CollectibleId | null;
+  revealId: PrizeId | null;
+  hovered: PrizeId | null;
   /** Prize directly under the claw in manual mode. */
-  aimed: CollectibleId | null;
+  aimed: PrizeId | null;
   message: string;
   music: boolean;
   sfx: boolean;
@@ -44,6 +49,9 @@ export const useGame = create<GameState>((set) => ({
   sceneFailed: false,
   booted: false,
   collected: [],
+  secretUnlocked: false,
+  secretClaimed: false,
+  playerName: "",
   hiScore: 0,
   credits: 0,
   activeSection: null,
@@ -57,6 +65,18 @@ export const useGame = create<GameState>((set) => ({
 }));
 
 export const game = () => useGame.getState();
+
+type Progress = Pick<GameState, "collected" | "secretUnlocked" | "secretClaimed">;
+
+export const secretAvailable = (s: Progress) => s.secretUnlocked && !s.secretClaimed;
+
+/** The "what's left" line shown on every status display. */
+export function availabilityLine(s: Progress) {
+  if (secretAvailable(s)) return "1 SECRET PRIZE AVAILABLE";
+  const left = COLLECTIBLES.length - s.collected.length;
+  if (left === 0) return s.secretClaimed ? "ALL PRIZES CLAIMED" : `${s.collected.length}/${COLLECTIBLES.length} COLLECTED`;
+  return `${left} COLLECTIBLE${left > 1 ? "S" : ""} AVAILABLE`;
+}
 export const isBusy = (phase: Phase) => phase !== "idle" && phase !== "section";
 
 const HI_SCORE_KEY = "claw-portfolio:hi-score";

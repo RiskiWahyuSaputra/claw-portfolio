@@ -3,7 +3,7 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { RoundedBox, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
-import type { CollectibleId } from "@/data/collectibles";
+import type { PrizeId } from "@/data/collectibles";
 import { laptopScreenTexture } from "./textures";
 
 /** Deterministic, so server and client layouts never disagree. */
@@ -218,11 +218,56 @@ function GoldenCapsule() {
   );
 }
 
-export const PRIZE_MODELS: Record<CollectibleId, () => React.ReactNode> = {
+function createStar() {
+  const shape = new THREE.Shape();
+  for (let i = 0; i < 10; i++) {
+    const radius = i % 2 === 0 ? 0.27 : 0.115;
+    const angle = Math.PI / 2 + (i * Math.PI) / 5;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    if (i === 0) shape.moveTo(x, y);
+    else shape.lineTo(x, y);
+  }
+  shape.closePath();
+  return new THREE.ExtrudeGeometry(shape, { depth: 0.13, bevelEnabled: false });
+}
+
+function HoloToken() {
+  const star = useMemo(() => createStar(), []);
+  return (
+    <group scale={1.06}>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.45, 0.45, 0.09, 56]} />
+        <meshPhysicalMaterial
+          color="#c9d4ff"
+          metalness={0.92}
+          roughness={0.16}
+          iridescence={1}
+          iridescenceIOR={1.8}
+          iridescenceThicknessMinimum={180}
+          iridescenceThicknessMaximum={620}
+          emissive="#3d2fb0"
+          emissiveIntensity={0.42}
+        />
+      </mesh>
+      <mesh>
+        <torusGeometry args={[0.452, 0.034, 14, 64]} />
+        <meshBasicMaterial color="#9ff0ff" toneMapped={false} />
+      </mesh>
+      <mesh geometry={star} position={[0, 0, -0.065]}>
+        <meshBasicMaterial color="#e9fcff" toneMapped={false} />
+      </mesh>
+      <Sparkles count={22} scale={1.7} size={3.4} speed={0.5} color="#9ff0ff" />
+    </group>
+  );
+}
+
+export const PRIZE_MODELS: Record<PrizeId, () => React.ReactNode> = {
   who: MiniDev,
   work: MiniLaptop,
   journey: MiniRocket,
   certificates: MiniTrophy,
   contribution: PixelCube,
   contact: GoldenCapsule,
+  secret: HoloToken,
 };

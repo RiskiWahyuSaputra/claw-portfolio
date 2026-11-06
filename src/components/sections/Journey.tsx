@@ -65,7 +65,14 @@ export function Journey() {
               <p className="mb-2 mt-0.5 flex items-center gap-1.5 text-[13px] text-cream/60">
                 <LuMapPin className="size-3.5 shrink-0" aria-hidden="true" /> {entry.location}
               </p>
-              <p className="mb-3 text-sm leading-relaxed text-cream/80">{entry.body}</p>
+              <ul className="mb-3 space-y-1.5 text-sm leading-relaxed text-cream/80">
+                {entry.points.map((point) => (
+                  <li key={point} className="flex gap-2">
+                    <span className="mt-[.5rem] size-1.5 shrink-0 rounded-sm bg-[var(--accent)]" aria-hidden="true" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
               <div className="flex flex-wrap gap-1.5">
                 {entry.tags.map((tag) => (
                   <Tag key={tag}>{tag}</Tag>

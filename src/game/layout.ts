@@ -1,4 +1,4 @@
-import type { CollectibleId } from "@/data/collectibles";
+import type { PrizeId } from "@/data/collectibles";
 
 /** Shared world coordinates for the game logic and the 3D scene. */
 export const CHAMBER = { minX: -2.7, maxX: 2.7, floor: 2.75, ceiling: 7.1, depth: 1.72 };
@@ -25,11 +25,12 @@ export const FOCUS = { x: 0, y: 4.5, z: 3.6 };
 export type Slot = { x: number; y: number; z: number; tilt: number };
 
 /** One distinct X per prize so each stays reachable with LEFT/RIGHT only. */
-export const SLOTS: Record<CollectibleId, Slot> = {
+export const SLOTS: Record<PrizeId, Slot> = {
   who: { x: -0.55, y: 3.92, z: 0.72, tilt: -0.22 },
   work: { x: 0.05, y: 4.2, z: -0.62, tilt: 0.3 },
   journey: { x: 0.65, y: 3.94, z: 0.72, tilt: 0.14 },
   certificates: { x: 1.25, y: 4.24, z: -0.62, tilt: -0.3 },
   contribution: { x: 1.85, y: 3.9, z: 0.72, tilt: 0.45 },
   contact: { x: 2.42, y: 4.18, z: -0.5, tilt: -0.16 },
+  secret: { x: 0.95, y: 4.1, z: 0.15, tilt: 0 },
 };

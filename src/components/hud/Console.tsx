@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import { LuArrowLeft, LuArrowRight, LuCheck, LuRotateCcw } from "react-icons/lu";
-import { COLLECTIBLES, byId } from "@/data/collectibles";
-import { dropClaw, quickSelect, refill, setMode, setMove } from "@/game/engine";
+import { LuArrowLeft, LuArrowRight, LuCheck, LuIdCard, LuLock, LuRotateCcw } from "react-icons/lu";
+import { COLLECTIBLES, SECRET_PRIZE, byId } from "@/data/collectibles";
+import { dropClaw, openSection, quickSelect, refill, setMode, setMove } from "@/game/engine";
 import { pose } from "@/game/pose";
-import { useGame } from "@/game/store";
+import { secretAvailable, useGame } from "@/game/store";
 import { CollectibleIcon } from "@/components/ui/CollectibleIcon";
 
 const TRAVEL = 30;
@@ -84,8 +84,6 @@ function HoldButton({ direction, label, children }: { direction: -1 | 1; label: 
 function ManualControls() {
   const phase = useGame((s) => s.phase);
   const aimed = useGame((s) => s.aimed);
-  const collected = useGame((s) => s.collected);
-  const empty = collected.length === COLLECTIBLES.length;
 
   return (
     <div className="space-y-2.5">
@@ -102,7 +100,7 @@ function ManualControls() {
         <button
           type="button"
           onClick={dropClaw}
-          disabled={phase !== "idle" || empty}
+          disabled={phase !== "idle"}
           className="pixel flex size-16 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#ffb3c7,#ff7b9c_55%,#c23a68)] text-sm font-bold text-ink shadow-[0_6px_0_#7d2346,0_0_24px_-6px_#ff7b9c] transition active:translate-y-1 active:shadow-[0_2px_0_#7d2346] disabled:opacity-40 disabled:saturate-50"
         >
           DROP
@@ -115,6 +113,39 @@ function ManualControls() {
         <span className="pixel hidden shrink-0 text-[10px] text-cream/60 lg:inline">← → SPACE</span>
       </p>
     </div>
+  );
+}
+
+/** Visible from the start as a mystery, then becomes the real seventh prize. */
+function SecretSlot() {
+  const unlocked = useGame(secretAvailable);
+  const phase = useGame((s) => s.phase);
+
+  if (!unlocked) {
+    return (
+      <p className="col-span-full hidden min-h-11 items-center gap-2.5 rounded-lg border border-dashed border-white/15 px-2.5 text-cream/55 lg:flex">
+        <LuLock className="size-5 shrink-0" aria-hidden="true" />
+        <span className="min-w-0">
+          <span className="pixel block text-[10px]">07 ???</span>
+          <span className="block truncate text-[13px] font-semibold">Collect all 6 to unlock</span>
+        </span>
+      </p>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={phase !== "idle"}
+      onClick={() => quickSelect(SECRET_PRIZE.id)}
+      className="col-span-full flex min-h-11 items-center gap-2.5 rounded-lg border border-[#9ff0ff]/70 bg-[#9ff0ff]/10 px-2.5 py-1 text-left shadow-[0_0_22px_-8px_#9ff0ff] transition enabled:hover:bg-[#9ff0ff]/20 disabled:opacity-45"
+    >
+      <CollectibleIcon id="secret" className="size-7 shrink-0" />
+      <span className="min-w-0">
+        <span className="pixel block text-[10px] text-[#9ff0ff]">07 SECRET</span>
+        <span className="block truncate text-[13px] font-semibold text-cream">Grab the Holo Token</span>
+      </span>
+    </button>
   );
 }
 
@@ -148,6 +179,7 @@ function QuickSelect() {
           </button>
         );
       })}
+      <SecretSlot />
     </div>
   );
 }
@@ -156,24 +188,33 @@ function ClearedPanel() {
   const phase = useGame((s) => s.phase);
   return (
     <div className="space-y-2.5 py-1 text-center">
-      <p className="pixel text-sm text-gold">ALL 6 COLLECTED</p>
-      <p className="text-xs text-cream/70">You cleared the machine. Thanks for exploring.</p>
-      <button
-        type="button"
-        onClick={refill}
-        disabled={phase !== "idle"}
-        className="inline-flex h-10 items-center gap-2 rounded-lg bg-gold px-4 text-sm font-semibold text-ink transition hover:brightness-110 active:scale-95"
-      >
-        <LuRotateCcw className="size-4" /> Refill machine
-      </button>
+      <p className="pixel text-sm text-gold">MACHINE CLEARED</p>
+      <p className="text-xs text-cream/70">All 7 prizes claimed. Thanks for exploring.</p>
+      <div className="flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => openSection(SECRET_PRIZE.id)}
+          disabled={phase !== "idle"}
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-gold px-4 text-sm font-semibold text-ink transition hover:brightness-110 active:scale-95"
+        >
+          <LuIdCard className="size-4" /> Your card
+        </button>
+        <button
+          type="button"
+          onClick={refill}
+          disabled={phase !== "idle"}
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/20 px-4 text-sm font-semibold text-cream transition hover:border-white/50 active:scale-95"
+        >
+          <LuRotateCcw className="size-4" /> Refill
+        </button>
+      </div>
     </div>
   );
 }
 
 export function Console() {
   const mode = useGame((s) => s.mode);
-  const collected = useGame((s) => s.collected);
-  const cleared = collected.length === COLLECTIBLES.length;
+  const cleared = useGame((s) => s.secretClaimed);
 
   return (
     <section
@@ -202,7 +243,7 @@ export function Console() {
       </div>
       {cleared ? <ClearedPanel /> : mode === "quick" ? <QuickSelect /> : <ManualControls />}
       {!cleared && mode === "quick" && (
-        <p className="mt-2 hidden text-xs text-cream/60 lg:block">Click a prize in the machine or pick one here. Keys 1-6 work too.</p>
+        <p className="mt-2 hidden text-xs text-cream/60 lg:block">Click a prize in the machine or pick one here. Keys 1-7 work too.</p>
       )}
     </section>
   );

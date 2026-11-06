@@ -212,6 +212,13 @@ button:disabled {
     radial-gradient(circle at 50% 16%, color-mix(in srgb, var(--accent-soft) 54%, transparent), transparent 52%);
 }
 
+.bg-secret {
+  background-image:
+    radial-gradient(circle at 20% 8%, color-mix(in srgb, var(--accent-soft) 60%, transparent), transparent 44%),
+    radial-gradient(circle at 86% 30%, rgba(255, 123, 156, 0.16), transparent 38%),
+    radial-gradient(circle at 60% 100%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 46%);
+}
+
 /* Holographic trading card sheen. */
 .holo::after {
   content: "";

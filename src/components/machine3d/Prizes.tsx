@@ -4,11 +4,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import { COLLECTIBLES, byId, type Collectible } from "@/data/collectibles";
-import { quickSelect } from "@/game/engine";
+import { ALL_PRIZES, byId, type Collectible } from "@/data/collectibles";
+import { canGrab, quickSelect } from "@/game/engine";
 import { CHAMBER, SLOTS } from "@/game/layout";
 import { pose } from "@/game/pose";
-import { useGame } from "@/game/store";
+import { secretAvailable, useGame } from "@/game/store";
 import { prefersReducedMotion } from "@/game/capabilities";
 import { Glow } from "./Glow";
 import { PRIZE_MODELS, seededRandom } from "./models";
@@ -26,14 +26,17 @@ function Prize({ item }: { item: Collectible }) {
   const slot = SLOTS[item.id];
   const Model = PRIZE_MODELS[item.id];
   const reduced = useMemo(() => prefersReducedMotion(), []);
-  const rare = item.id === "contact";
+  const isSecret = item.id === "secret";
+  const rare = item.id === "contact" || isSecret;
 
   useFrame(({ clock }, delta) => {
     const group = root.current;
     if (!group) return;
-    const { collected, hovered, aimed } = useGame.getState();
+    const state = useGame.getState();
+    const { hovered, aimed } = state;
     const held = pose.prize.id === item.id;
-    group.visible = held || !collected.includes(item.id);
+    const inMachine = item.id === "secret" ? secretAvailable(state) : !state.collected.includes(item.id);
+    group.visible = held || inMachine;
     if (!group.visible) return;
 
     const t = clock.elapsedTime;
@@ -48,11 +51,13 @@ function Prize({ item }: { item: Collectible }) {
       if (spinner.current) spinner.current.rotation.y = pose.prize.spin;
     } else {
       const bob = reduced ? 0 : Math.sin(t * 0.9 + item.index * 1.3) * 0.028;
-      group.position.set(slot.x, slot.y + bob, slot.z);
+      // The secret prize falls from the ceiling when it unlocks.
+      const fall = isSecret ? (1 - pose.secretDrop) * 2.7 : 0;
+      group.position.set(slot.x, slot.y + bob + fall, slot.z);
       group.scale.setScalar(hoverScale.current * Math.max(pose.refill, 0.001));
       group.rotation.z = slot.tilt;
       if (spinner.current && !reduced) {
-        spinner.current.rotation.y = Math.sin(t * 0.5 + item.index) * 0.4;
+        spinner.current.rotation.y = isSecret ? t * 1.1 : Math.sin(t * 0.5 + item.index) * 0.4;
       }
     }
 
@@ -66,8 +71,8 @@ function Prize({ item }: { item: Collectible }) {
   });
 
   const enter = (event: ThreeEvent<PointerEvent>) => {
-    const { phase, mode, collected, set } = useGame.getState();
-    if (phase !== "idle" || mode !== "quick" || collected.includes(item.id)) return;
+    const { phase, mode, set } = useGame.getState();
+    if (phase !== "idle" || mode !== "quick" || !canGrab(item.id)) return;
     event.stopPropagation();
     set({ hovered: item.id });
     setCursor("grab");
@@ -78,7 +83,7 @@ function Prize({ item }: { item: Collectible }) {
     setCursor(null);
   };
   const click = (event: ThreeEvent<MouseEvent>) => {
-    if (useGame.getState().mode !== "quick") return;
+    if (useGame.getState().mode !== "quick" || !canGrab(item.id)) return;
     event.stopPropagation();
     setCursor(null);
     quickSelect(item.id);
@@ -165,7 +170,7 @@ export function Prizes() {
   return (
     <group>
       <BallPit />
-      {COLLECTIBLES.map((item) => (
+      {ALL_PRIZES.map((item) => (
         <Prize key={item.id} item={item} />
       ))}
       <PrizeLabel />
