@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, use, useEffect, useRef, useState } from "react";
+import { Suspense, use, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
-import { useGame } from "@/game/store";
 import { CameraRig, FocusCurtain } from "./CameraRig";
 import { Cabinet } from "./Cabinet";
 import { Claw } from "./Claw";
@@ -70,19 +69,10 @@ function World({ onReady }: { onReady: () => void }) {
   );
 }
 
-type Props = { onReady: () => void; paused: boolean };
+type Props = { onReady: () => void; onContextLost: () => void; paused: boolean };
 
-export default function Scene({ onReady, paused }: Props) {
+export default function Scene({ onReady, onContextLost, paused }: Props) {
   const [dpr, setDpr] = useState(1.6);
-  const forced = useRef(false);
-
-  useEffect(() => {
-    forced.current = new URLSearchParams(window.location.search).get("renderer") === "3d";
-  }, []);
-
-  const fallBack = () => {
-    if (!forced.current) useGame.getState().set({ renderer: "lite" });
-  };
 
   return (
     <Canvas
@@ -94,14 +84,11 @@ export default function Scene({ onReady, paused }: Props) {
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.04;
-        gl.domElement.addEventListener("webglcontextlost", fallBack);
+        gl.domElement.addEventListener("webglcontextlost", onContextLost);
       }}
     >
-      <PerformanceMonitor
-        flipflops={3}
-        onDecline={() => setDpr((current) => Math.max(1, current - 0.3))}
-        onFallback={fallBack}
-      />
+      {/* Slow devices keep the full machine and trade resolution for frame rate. */}
+      <PerformanceMonitor onDecline={() => setDpr((current) => Math.max(1, current - 0.3))} />
       <Suspense fallback={null}>
         <World onReady={onReady} />
       </Suspense>

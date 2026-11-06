@@ -3,12 +3,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { byId } from "@/data/collectibles";
 import { useGame } from "@/game/store";
-import { CollectibleIcon } from "@/components/ui/CollectibleIcon";
 
 /** The win moment: the collectible takes the screen and its title lands beneath it. */
 export function RevealOverlay() {
   const revealId = useGame((s) => s.revealId);
-  const renderer = useGame((s) => s.renderer);
   const item = revealId ? byId(revealId) : null;
 
   return (
@@ -21,20 +19,8 @@ export function RevealOverlay() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
           className="pointer-events-none fixed inset-0 z-30 flex flex-col items-center justify-end px-6 pb-[10vh] text-center"
-          style={renderer === "lite" ? { background: item.backdrop } : undefined}
           role="status"
         >
-          {renderer === "lite" && (
-            <motion.div
-              initial={{ scale: 0.3, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 180, damping: 13 }}
-              className="mb-auto mt-[18vh]"
-              style={{ filter: `drop-shadow(0 0 34px ${item.accent})` }}
-            >
-              <CollectibleIcon id={item.id} className="size-44" />
-            </motion.div>
-          )}
           <motion.p
             initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

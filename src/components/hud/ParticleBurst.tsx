@@ -6,7 +6,7 @@ import { prefersReducedMotion } from "@/game/capabilities";
 
 type Particle = { x: number; y: number; vx: number; vy: number; size: number; life: number; color: string; spin: number };
 
-/** Pixel confetti. Renderer-independent, so the lite machine celebrates too. */
+/** Pixel confetti, drawn on its own canvas above the whole page. */
 export function ParticleBurst() {
   const canvas = useRef<HTMLCanvasElement>(null);
 

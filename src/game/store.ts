@@ -14,12 +14,12 @@ export type Phase =
   | "returning";
 
 export type Mode = "quick" | "manual";
-export type Renderer = "detecting" | "3d" | "lite";
 
 type GameState = {
   phase: Phase;
   mode: Mode;
-  renderer: Renderer;
+  /** True when the 3D machine cannot run here. Sections stay reachable from the dock. */
+  sceneFailed: boolean;
   booted: boolean;
   collected: CollectibleId[];
   hiScore: number;
@@ -41,7 +41,7 @@ export const READY_MESSAGE = "READY TO PLAY";
 export const useGame = create<GameState>((set) => ({
   phase: "idle",
   mode: "quick",
-  renderer: "detecting",
+  sceneFailed: false,
   booted: false,
   collected: [],
   hiScore: 0,

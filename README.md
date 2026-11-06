@@ -37,17 +37,16 @@ src/
     store.ts            State UI (Zustand)
     layout.ts           Koordinat dunia: posisi prize, chute, batas capit
     audio.ts            Musik dan efek suara
-    capabilities.ts     Memilih renderer 3D atau Lite
+    capabilities.ts     Deteksi WebGL dan reduced motion
   components/
-    machine3d/          Renderer WebGL
-    lite/               Renderer fallback CSS 3D
+    machine3d/          Mesin 3D (WebGL)
     hud/                Top bar, dock, konsol, loader, partikel
     sections/           Enam section portofolio
   data/                 Semua konten. Edit di sini untuk mengubah isi situs
 ```
 
-`engine.ts` hanya menulis ke `pose`. Renderer 3D dan Lite sama-sama membacanya,
-sehingga aturan permainan identik di keduanya.
+`engine.ts` hanya menulis ke `pose`, lalu scene 3D membacanya setiap frame,
+sehingga animasi capit tidak memicu render ulang React.
 
 ## Mengubah konten
 
@@ -69,8 +68,8 @@ Token diambil dari `GITHUB_TOKEN` atau login `gh`. Jika gagal saat build, snapsh
 Isi `RESEND_API_KEY` di `.env.local` (lihat `.env.example`) agar pesan terkirim lewat [Resend](https://resend.com).
 Tanpa key tersebut, form membuka aplikasi email pengunjung dengan pesan yang sudah terisi.
 
-## Fallback
+## Perangkat dan aksesibilitas
 
-Mode Lite (CSS 3D) aktif otomatis jika WebGL tidak tersedia, perangkat lemah, Data Saver menyala, frame rate terus rendah, atau scene 3D gagal.
-Pengunjung juga bisa berpindah lewat tombol `3D`/`LITE`. Untuk menguji: `?renderer=lite` atau `?renderer=3d`.
+Situs hanya memakai mesin 3D. Pada perangkat lambat, resolusi render diturunkan otomatis.
+Jika browser tidak mendukung WebGL, muncul pesan singkat dan semua section tetap bisa dibuka lewat menu collectible di atas.
 `prefers-reduced-motion` dipatuhi: urutan capit dipercepat dan animasi dekoratif dimatikan.

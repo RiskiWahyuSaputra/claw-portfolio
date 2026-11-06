@@ -1,6 +1,6 @@
 "use client";
 
-import { LuBox, LuCheck, LuLayers, LuMusic, LuVolume2, LuVolumeX } from "react-icons/lu";
+import { LuCheck, LuMusic, LuVolume2, LuVolumeX } from "react-icons/lu";
 import { COLLECTIBLES } from "@/data/collectibles";
 import { audio } from "@/game/audio";
 import { closeSection, openSection } from "@/game/engine";
@@ -74,7 +74,6 @@ function Dock() {
 export function TopBar() {
   const music = useGame((s) => s.music);
   const sfx = useGame((s) => s.sfx);
-  const renderer = useGame((s) => s.renderer);
   const active = useGame((s) => s.activeSection);
   const set = useGame((s) => s.set);
 
@@ -120,16 +119,6 @@ export function TopBar() {
           {sfx ? <LuVolume2 className="size-4" /> : <LuVolumeX className="size-4" />}
           <span className="pixel hidden text-[10px] lg:inline">{sfx ? "ON" : "OFF"}</span>
         </Toggle>
-        <span className="hidden sm:inline-flex">
-          <Toggle
-            label={renderer === "lite" ? "Switch to full 3D machine" : "Switch to lite machine"}
-            on={renderer === "lite"}
-            onClick={() => set({ renderer: renderer === "lite" ? "3d" : "lite" })}
-          >
-            {renderer === "lite" ? <LuLayers className="size-4" /> : <LuBox className="size-4" />}
-            <span className="pixel hidden text-[10px] lg:inline">{renderer === "lite" ? "LITE" : "3D"}</span>
-          </Toggle>
-        </span>
       </div>
     </header>
   );

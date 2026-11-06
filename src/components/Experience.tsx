@@ -3,10 +3,9 @@
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { COLLECTIBLES, byId, bySlug } from "@/data/collectibles";
-import { detectRenderer } from "@/game/capabilities";
+import { supportsWebGL } from "@/game/capabilities";
 import { closeSection, dropClaw, openSection, quickSelect, setMode, setMove, startEngine } from "@/game/engine";
 import { game, loadHiScore, useGame } from "@/game/store";
-import { LiteMachine } from "./lite/LiteMachine";
 import { BootLoader } from "./hud/BootLoader";
 import { Console } from "./hud/Console";
 import { ParticleBurst } from "./hud/ParticleBurst";
@@ -18,7 +17,7 @@ import { SectionLayer } from "./sections/SectionLayer";
 
 const Scene = dynamic(() => import("./machine3d/Scene"), { ssr: false });
 
-/** Any failure inside the 3D tree drops the visitor to the CSS machine. */
+/** A crash in the 3D tree must not take the portfolio content down with it. */
 class SceneBoundary extends Component<{ children: ReactNode; onError: () => void }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
@@ -44,7 +43,7 @@ function useKeyboard() {
         if (!document.querySelector("dialog[open]")) closeSection();
         return;
       }
-      if (typing || game().activeSection) return;
+      if (typing || game().activeSection || game().sceneFailed) return;
 
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
         event.preventDefault();
@@ -116,7 +115,7 @@ function useHashRouting() {
 }
 
 export function Experience() {
-  const renderer = useGame((s) => s.renderer);
+  const sceneFailed = useGame((s) => s.sceneFailed);
   const phase = useGame((s) => s.phase);
   const revealId = useGame((s) => s.revealId);
   const revealing = revealId !== null;
@@ -124,19 +123,19 @@ export function Experience() {
   const [sceneReady, setSceneReady] = useState(false);
   const markReady = useCallback(() => setSceneReady(true), []);
 
+  const failScene = useCallback(() => set({ sceneFailed: true }), [set]);
+
   useEffect(() => {
     startEngine();
-    set({ renderer: detectRenderer(), hiScore: loadHiScore() });
-  }, [set]);
+    set({ hiScore: loadHiScore() });
+    if (!supportsWebGL()) failScene();
+  }, [set, failScene]);
 
-  // If the 3D scene never produces a frame, stop waiting and use the fallback.
+  // A very slow device should see the machine appear, not a loader that never ends.
   useEffect(() => {
-    if (renderer !== "3d" || sceneReady) return;
-    const id = setTimeout(() => {
-      if (new URLSearchParams(window.location.search).get("renderer") !== "3d") set({ renderer: "lite" });
-    }, 14000);
+    const id = setTimeout(markReady, 20000);
     return () => clearTimeout(id);
-  }, [renderer, sceneReady, set]);
+  }, [markReady]);
 
   useKeyboard();
   useHashRouting();
@@ -166,12 +165,20 @@ export function Experience() {
       </div>
 
       <div className="relative min-h-0 flex-1 short:mr-[18.5rem] lg:mr-[21.5rem] xl:absolute xl:inset-0 xl:mr-0">
-        {renderer === "3d" && (
-          <SceneBoundary onError={() => set({ renderer: "lite" })}>
-            <Scene onReady={markReady} paused={phase === "section"} />
+        {sceneFailed ? (
+          <div className="flex h-full items-center justify-center p-6">
+            <div className="glass max-w-sm rounded-2xl p-6 text-center">
+              <p className="pixel mb-2 text-sm text-gold">MACHINE OFFLINE</p>
+              <p className="text-sm leading-relaxed text-cream/80">
+                This browser can&apos;t run the 3D machine. You can still explore everything from the collectible menu at the top.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <SceneBoundary onError={failScene}>
+            <Scene onReady={markReady} onContextLost={failScene} paused={phase === "section"} />
           </SceneBoundary>
         )}
-        {renderer === "lite" && <LiteMachine onReady={markReady} />}
         <div className={hud}>
           <SkillFloat />
         </div>
@@ -180,14 +187,14 @@ export function Experience() {
       <div className={`absolute left-6 top-20 z-20 hidden xl:block ${hud}`}>
         <StatusPanel />
       </div>
-      <div className={`relative z-20 shrink-0 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] ${hud} short:absolute short:right-0 short:top-12 short:w-[18.5rem] short:pb-0 lg:absolute lg:right-3 lg:top-[7.4rem] lg:w-auto lg:p-0 xl:right-6 xl:top-20`}>
+      <div className={`relative z-20 shrink-0 px-2 ${sceneFailed ? "hidden" : ""} pb-[max(.5rem,env(safe-area-inset-bottom))] ${hud} short:absolute short:right-0 short:top-12 short:w-[18.5rem] short:pb-0 lg:absolute lg:right-3 lg:top-[7.4rem] lg:w-auto lg:p-0 xl:right-6 xl:top-20`}>
         <Console />
       </div>
 
       <RevealOverlay />
       <SectionLayer />
       <ParticleBurst />
-      <BootLoader sceneReady={sceneReady} />
+      <BootLoader sceneReady={sceneReady || sceneFailed} />
     </main>
   );
 }

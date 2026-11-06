@@ -1,6 +1,6 @@
 import type { CollectibleId } from "@/data/collectibles";
 
-/** Shared world coordinates. The 3D scene and the CSS fallback both project from these. */
+/** Shared world coordinates for the game logic and the 3D scene. */
 export const CHAMBER = { minX: -2.7, maxX: 2.7, floor: 2.75, ceiling: 7.1, depth: 1.72 };
 
 export const CLAW = {
